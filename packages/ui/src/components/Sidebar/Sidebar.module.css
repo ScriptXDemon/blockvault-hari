@@ -1,0 +1,17 @@
+.sidebar { display: flex; flex-direction: column; width: var(--sidebar-width, 260px); height: 100vh; background: var(--bv-surface); border-right: 1px solid var(--bv-border); position: sticky; top: 0; overflow: hidden; transition: width var(--bv-transition-fast); flex-shrink: 0; }
+.sidebar--collapsed { width: var(--sidebar-collapsed-width, 64px); }
+.brand { padding: var(--bv-space-5) var(--bv-space-4) var(--bv-space-4); border-bottom: 1px solid var(--bv-border); }
+.brandMark { display: flex; align-items: center; gap: var(--bv-space-3); }
+.brandIcon { width: 34px; height: 34px; background: var(--bv-accent); border-radius: var(--bv-radius-md); display: flex; align-items: center; justify-content: center; color: var(--bv-surface); flex-shrink: 0; }
+.brandName { font-family: var(--bv-font-serif); font-size: var(--bv-text-base); font-weight: 700; color: var(--bv-accent-strong); line-height: 1.2; }
+.brandVersion { font-size: var(--bv-text-xs); color: var(--bv-ink-faint); }
+.nav { display: flex; flex-direction: column; gap: var(--bv-space-1); padding: var(--bv-space-3) var(--bv-space-2); flex: 1; overflow-y: auto; }
+.navItem { display: flex; align-items: center; gap: var(--bv-space-3); padding: 9px var(--bv-space-3); border-radius: var(--bv-radius-md); color: var(--bv-ink-muted); text-decoration: none; font-size: var(--bv-text-sm); font-weight: 500; transition: background var(--bv-transition-fast), color var(--bv-transition-fast); white-space: nowrap; }
+.navItem:hover { background: var(--bv-surface-strong); color: var(--bv-ink); }
+.navItem.active { background: color-mix(in srgb, var(--bv-accent) 10%, transparent); color: var(--bv-accent-strong); font-weight: 600; }
+.navIcon { display: flex; align-items: center; flex-shrink: 0; width: 20px; }
+.navText { flex: 1; }
+.bottom { padding: var(--bv-space-3) var(--bv-space-2); border-top: 1px solid var(--bv-border); display: flex; flex-direction: column; gap: var(--bv-space-2); }
+.walletChip { display: flex; align-items: center; gap: var(--bv-space-2); padding: 8px var(--bv-space-3); background: var(--bv-surface-strong); border-radius: var(--bv-radius-md); }
+.walletDot { width: 8px; height: 8px; border-radius: 50%; background: var(--bv-accent); flex-shrink: 0; }
+.walletAddr { font-size: var(--bv-text-xs); font-family: var(--bv-font-mono); color: var(--bv-ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

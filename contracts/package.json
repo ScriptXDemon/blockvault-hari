@@ -1,0 +1,16 @@
+{
+  "name": "blockvault-zkpt-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "hardhat compile",
+    "node": "hardhat node --hostname 127.0.0.1 --port 8545",
+    "deploy:testnet": "hardhat run scripts/deploy-zkpt.js --network blockvaultTestnet"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.15.0",
+    "hardhat": "^2.24.3"
+  }
+}

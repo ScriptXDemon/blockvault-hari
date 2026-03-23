@@ -1,5 +1,0 @@
-<!doctype html>
-<html lang=en>
-<title>401 Unauthorized</title>
-<h1>Unauthorized</h1>
-<p>invalid token</p>

@@ -1,0 +1,12 @@
+.wrapper { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: var(--bv-text-sm); }
+.thead th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: var(--bv-text-xs); letter-spacing: 0.04em; text-transform: uppercase; color: var(--bv-ink-muted); border-bottom: 1px solid var(--bv-border); background: var(--bv-surface-strong); white-space: nowrap; }
+.thead th.sortable { cursor: pointer; user-select: none; }
+.thead th.sortable:hover { color: var(--bv-accent); }
+.tbody tr { border-bottom: 1px solid var(--bv-border); transition: background var(--bv-transition-fast); }
+.tbody tr:last-child { border-bottom: none; }
+.tbody tr.clickable { cursor: pointer; }
+.tbody tr.clickable:hover { background: var(--bv-surface-strong); }
+.tbody td { padding: 12px 14px; color: var(--bv-ink); vertical-align: middle; }
+.sortIcon { margin-left: 4px; font-size: var(--bv-text-xs); color: var(--bv-accent); }
+.muted { color: var(--bv-ink-faint); }

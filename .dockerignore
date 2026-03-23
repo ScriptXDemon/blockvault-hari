@@ -1,0 +1,17 @@
+.git
+.venv
+.pytest_cache
+__pycache__
+*.pyc
+.claude
+.opencode
+.tmp-v4
+.tools
+node_modules
+apps/web/node_modules
+apps/web/dist
+apps/redactor-rs/target
+output
+logs
+data
+circuits/zkpt/*/circuit.zkey

@@ -1,0 +1,33 @@
+{
+  "profile_id": "v3c",
+  "profile_class": "authoritative",
+  "proof_boundary": "canonical_segment_mask_v1",
+  "artifact_version_id": "v3c",
+  "build_timestamp": "2026-03-14T21:10:56.287780+00:00",
+  "circuit": {
+    "id": "zkpt_redaction_v2",
+    "num_policy_rules": 4,
+    "num_segments": 6,
+    "segment_size": 256,
+    "tree_depth": 6
+  },
+  "circuit_id": "zkpt_redaction_v2",
+  "files": {
+    "r1cs": "zkpt_redaction_v2.r1cs",
+    "solidity_verifier": "solidity_verifier.sol",
+    "verification_key": "verification_key.json",
+    "wasm": "zkpt_redaction_v2_js/zkpt_redaction_v2.wasm",
+    "zkey": "circuit.zkey",
+    "source": "src\\zkpt_redaction_v2.circom"
+  },
+  "hashes": {
+    "r1cs": "aa2afb56723512b0ed3dedc29dcf24514849cae5918dd12535f03db7ccb8d03d",
+    "solidity_verifier": "2598d5a9bb5b8f012d3ca264a363b820289abe45a41728bc083941118b673c42",
+    "verification_key": "63418cf7c70c1ba33a86a343dc65939aeed91f0b518844ebbc5e3172e1afe8bc",
+    "wasm": "47ba0dd9f08dcf03986e54a61605a66fa0c8de96daf55e1a77ff87e493ca54ad",
+    "zkey": "4df67c4ed46b62e4daf9cde1f0580583ecf369c3124fae0b4c256d7c45fa9292"
+  },
+  "protocol": "plonk",
+  "proof_model": "full_segment_windows",
+  "binding_input_name": "transformationId"
+}

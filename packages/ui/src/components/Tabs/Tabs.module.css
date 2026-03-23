@@ -1,0 +1,6 @@
+.tabList { display: flex; gap: 0; border-bottom: 1px solid var(--bv-border); margin-bottom: var(--bv-space-4); overflow-x: auto; }
+.tab { display: inline-flex; align-items: center; gap: var(--bv-space-2); padding: 10px 16px; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: var(--bv-text-sm); font-weight: 500; color: var(--bv-ink-muted); white-space: nowrap; transition: color var(--bv-transition-fast), border-color var(--bv-transition-fast); margin-bottom: -1px; }
+.tab:hover { color: var(--bv-ink); }
+.tab--active { color: var(--bv-accent-strong); border-bottom-color: var(--bv-accent); font-weight: 600; }
+.badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9999px; background: color-mix(in srgb, var(--bv-ink-muted) 15%, transparent); color: var(--bv-ink-muted); font-size: 11px; font-weight: 700; }
+.tab--active .badge { background: color-mix(in srgb, var(--bv-accent) 15%, transparent); color: var(--bv-accent-strong); }

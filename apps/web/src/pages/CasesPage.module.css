@@ -1,0 +1,64 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--bv-space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: var(--bv-space-5);
+  background: var(--bv-surface-strong);
+  border: 1px solid var(--bv-border);
+  border-radius: var(--bv-radius-xl);
+  cursor: pointer;
+  transition: border-color var(--bv-transition-fast), box-shadow var(--bv-transition-fast), transform var(--bv-transition-fast);
+  gap: var(--bv-space-2);
+  position: relative;
+}
+
+.card:hover {
+  border-color: var(--bv-accent);
+  box-shadow: var(--bv-shadow-md);
+  transform: translateY(-1px);
+}
+
+.cardEyebrow {
+  font-size: var(--bv-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bv-highlight);
+}
+
+.cardTitle {
+  font-family: var(--bv-font-serif);
+  font-size: var(--bv-text-lg);
+  font-weight: 600;
+  color: var(--bv-accent-strong);
+  margin: 2px 0;
+}
+
+.cardDesc {
+  margin: 0;
+  font-size: var(--bv-text-sm);
+  color: var(--bv-ink-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.cardArrow {
+  position: absolute;
+  right: var(--bv-space-5);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--bv-ink-faint);
+  transition: color var(--bv-transition-fast), transform var(--bv-transition-fast);
+}
+
+.card:hover .cardArrow {
+  color: var(--bv-accent);
+  transform: translateY(-50%) translateX(3px);
+}

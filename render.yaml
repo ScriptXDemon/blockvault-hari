@@ -1,23 +1,134 @@
+previews:
+  generation: manual
+
+envVarGroups:
+  - name: blockvault-hosted-shared
+    envVars:
+      - key: BLOCKVAULT_APP_ENV
+        value: staging
+      - key: BLOCKVAULT_DEBUG
+        value: "false"
+      - key: BLOCKVAULT_ENABLE_TEST_AUTH
+        value: "true"
+      - key: BLOCKVAULT_FRONTEND_ORIGINS
+        sync: false
+      - key: BLOCKVAULT_FRONTEND_ORIGIN_REGEX
+        value: ""
+      - key: BLOCKVAULT_SESSION_COOKIE_SECURE
+        value: "true"
+      - key: BLOCKVAULT_SESSION_COOKIE_SAMESITE
+        value: none
+      - key: BLOCKVAULT_MONGO_URI
+        sync: false
+      - key: BLOCKVAULT_MONGO_DATABASE
+        value: blockvault_fresh
+      - key: BLOCKVAULT_SECRET_KEY
+        generateValue: true
+      - key: BLOCKVAULT_STORAGE_BACKEND
+        value: s3
+      - key: BLOCKVAULT_STORAGE_S3_REGION
+        value: us-east-1
+      - key: BLOCKVAULT_STORAGE_S3_BUCKET
+        sync: false
+      - key: BLOCKVAULT_STORAGE_S3_ACCESS_KEY_ID
+        sync: false
+      - key: BLOCKVAULT_STORAGE_S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: BLOCKVAULT_STORAGE_S3_FORCE_PATH_STYLE
+        value: "false"
+      - key: BLOCKVAULT_STORAGE_S3_AUTO_CREATE_BUCKET
+        value: "false"
+      - key: BLOCKVAULT_SIWE_DOMAIN
+        sync: false
+      - key: BLOCKVAULT_SIWE_URI
+        sync: false
+      - key: BLOCKVAULT_ALLOW_INLINE_REDACTION_FALLBACK
+        value: "false"
+      - key: BLOCKVAULT_ZKPT_PROFILE
+        value: v4_sparse
+      - key: BLOCKVAULT_ZKPT_ONCHAIN_SAFE_PROFILE
+        value: v3a
+      - key: BLOCKVAULT_ZKPT_PROOF_TIMEOUT_SECONDS
+        value: "360"
+      - key: BLOCKVAULT_ZKPT_ARTIFACTS_AUTO_DOWNLOAD
+        value: "true"
+      - key: BLOCKVAULT_ZKPT_ARTIFACTS_S3_BUCKET
+        sync: false
+      - key: BLOCKVAULT_ZKPT_ARTIFACTS_S3_PREFIX
+        value: zkpt-artifacts
+      - key: BLOCKVAULT_ZKPT_ONCHAIN_ENABLED
+        value: "false"
+
 services:
   - type: web
-    name: blockvault-backend
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    name: blockvault-api
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./infra/api.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/api/**
+        - apps/worker/**
+        - apps/redactor-rs/**
+        - circuits/**
+        - contracts/**
+        - infra/**
+        - scripts/**
+        - README.md
+        - package.json
+        - package-lock.json
     envVars:
-      - key: FLASK_ENV
-        value: production
-      - key: MONGO_URI
-        value: memory://dev
-      - key: SECRET_KEY
-        generateValue: true
-      - key: JWT_SECRET
-        generateValue: true
-      - key: JWT_EXP_MINUTES
-        value: 60
-      - key: CORS_ALLOWED_ORIGINS
-        value: https://blockvaulttt.netlify.app
-      - key: ALLOW_DEV_TOKEN
-        value: 1
-      - key: IPFS_ENABLED
-        value: 0
+      - fromGroup: blockvault-hosted-shared
+      - key: BLOCKVAULT_RUNTIME_ROLE
+        value: api
+      - key: BLOCKVAULT_CELERY_BROKER_URL
+        fromDatabase:
+          name: blockvault-redis
+          property: connectionString
+      - key: BLOCKVAULT_CELERY_RESULT_BACKEND
+        fromDatabase:
+          name: blockvault-redis
+          property: connectionString
+
+  - type: worker
+    name: blockvault-worker
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./infra/api.Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/api/**
+        - apps/worker/**
+        - apps/redactor-rs/**
+        - circuits/**
+        - contracts/**
+        - infra/**
+        - scripts/**
+        - README.md
+        - package.json
+        - package-lock.json
+    envVars:
+      - fromGroup: blockvault-hosted-shared
+      - key: BLOCKVAULT_RUNTIME_ROLE
+        value: worker
+      - key: BLOCKVAULT_CELERY_BROKER_URL
+        fromDatabase:
+          name: blockvault-redis
+          property: connectionString
+      - key: BLOCKVAULT_CELERY_RESULT_BACKEND
+        fromDatabase:
+          name: blockvault-redis
+          property: connectionString
+
+databases:
+  - name: blockvault-redis
+    plan: starter
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru

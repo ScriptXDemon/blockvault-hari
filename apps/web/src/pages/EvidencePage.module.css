@@ -1,0 +1,74 @@
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bv-space-4);
+  margin-top: var(--bv-space-4);
+}
+
+@media (max-width: 900px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cardTitle {
+  font-family: var(--bv-font-serif);
+  font-size: var(--bv-text-base);
+  font-weight: 600;
+  color: var(--bv-accent-strong);
+  margin: 0 0 var(--bv-space-3) 0;
+}
+
+.detailList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detailList > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--bv-space-3);
+  padding: var(--bv-space-2) 0;
+  border-bottom: 1px solid var(--bv-border);
+  font-size: var(--bv-text-sm);
+}
+
+.detailList > div:last-child {
+  border-bottom: none;
+}
+
+.detailList dt {
+  color: var(--bv-ink-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.detailList dd {
+  margin: 0;
+  color: var(--bv-ink);
+  text-align: right;
+  word-break: break-all;
+}
+
+.hashRow {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-2);
+  justify-content: flex-end;
+}
+
+.mono {
+  font-family: var(--bv-font-mono);
+  font-size: var(--bv-text-xs);
+  color: var(--bv-ink);
+}
+
+.receiptHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--bv-space-3);
+  margin-bottom: var(--bv-space-3);
+}

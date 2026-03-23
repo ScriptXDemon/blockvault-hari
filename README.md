@@ -1,229 +1,433 @@
-# BlockVault – Encrypted File Vault (Off‑Chain Simplified Edition)
+# BlockVault
 
-This edition removes legacy on‑chain role / access control logic and wallet network coupling. Core functionality now focuses on:
+BlockVault is a clean-slate rebuild of the original project as a wallet-first legal document platform with a separate encrypted private vault.
 
-* Local (or MongoDB) metadata storage
-* AES‑GCM client‑side encryption with user‑provided passphrases
-* Optional RSA public key registration + encrypted share distribution
-* Clean React UI for upload, preview, verify, share, and download flows
+## Product boundary
 
-* All legacy RBAC contracts removed. An optional light on-chain anchoring layer (FileRegistry) can record file hashes + CIDs for auditability without reintroducing access gating.
+The fresh v1 scope is intentionally narrow:
 
----
+- wallet-first SIWE authentication with cookie-backed sessions
+- encrypted private vault upload, list, download, delete, and sharing
+- case-based legal document management
+- document notarization and evidence export
+- asynchronous redaction with an authoritative ZKPT integration boundary
+- immutable chain-of-custody timeline
 
-## Feature Highlights
+Explicitly excluded from the new codebase for v1:
 
-- **JWT Auth (Optional Wallet Signature)** – You can keep a simple address + dev token flow; full signature login can be disabled.
-- **RSA‑Based Sharing** – Register PEM public keys; passphrases delivered encrypted per recipient.
-- **Encrypted Files** – Client encrypts before upload, server never sees plaintext.
-- **Share Management APIs** – Create, list, revoke encrypted passphrase shares.
-- **Optional IPFS Integration** – Configure pinning + gateway if desired.
-- **Lightweight UI** – Network / on‑chain role controls removed.
+- AI analysis
+- BCDN workflows
+- signature workflows
+- experimental and auxiliary research modules
 
----
+## Monorepo layout
 
-## Repository Layout
+- `apps/web`: Vite React client
+- `apps/api`: FastAPI application
+- `apps/worker`: Celery worker entrypoint
+- `packages/ui`: shared design system primitives
+- `packages/contracts`: shared TypeScript API contracts
+- `infra`: local docker stack and deployment manifests
+- `docs`: product spec, runbooks, and patent boundary
 
-```
-BlockVault/
-├── blockvault/                 # Flask application package
-│   ├── api/                    # Auth, file, and user blueprints
-│   ├── core/                   # Config, security, RBAC, crypto helper
-│   └── __init__.py             # App factory registering routes & CORS
-├── blockvault-frontend/        # React single page app
-├── .env.example                # Reference environment configuration
-├── pyproject.toml / requirements.txt
-└── README.md
-```
+## Legacy archive
 
----
+The pre-rebuild implementation has been moved out of the working tree and archived externally at:
 
-## Getting Started
+- `D:\BlockVault-Legacy-Reference-20260312-025428`
 
-### 1. Clone & Environment
+That archive contains the historical patent notes, ZKPT reference material, old workflow tests, and the removed runtime implementation.
 
-```bash
-# clone & enter
-git clone https://github.com/ScriptXDemon/BlockVault.git
-cd BlockVault
+## Local development
 
-# create Python virtualenv
-python -m venv .venv
-source .venv/bin/activate
-
-# install backend dependencies
-pip install -e .[dev]
-
-# copy environment template
-cp .env.example .env
-# edit .env with your secrets and Mongo URI (no contract addresses needed)
-```
-
-_Key environment variables_
-
-| Variable | Purpose |
-| --- | --- |
-| `MONGO_URI` | Mongo connection string (`memory://` for in-memory dev) |
-| `SECRET_KEY` / `JWT_SECRET` | Flask & JWT secrets |
-| `ETH_RPC_URL` | (Optional) Only needed if reintroducing blockchain features |
-| `ETH_RPC_URL` | (Optional) Needed for on-chain anchoring |
-| `ETH_PRIVATE_KEY` | (Optional) Deployer/signing key for anchoring txs |
-| `FILE_REGISTRY_ADDRESS` | (Optional) Deployed FileRegistry contract address |
-| `ROLE_REGISTRY_ADDRESS` | (Deprecated) Ignored |
-| `FILE_ACCESS_CONTRACT` | (Deprecated) Ignored |
-| `CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins (or `*` for dev) |
-| `IPFS_ENABLED` / `IPFS_API_URL` | Optional IPFS pinning configuration |
-| `ALLOW_DEV_TOKEN` | Set to `1` in dev to use `/auth/dev_token` shortcut |
-
-### 2. Run the Backend
+### Web
 
 ```bash
-# from repo root
-export FLASK_ENV=development
-python -m blockvault.app
-```
-
-- **Mongo optional:** In-memory storage works for quick tests but resets on restart. Use Docker (`docker compose up -d mongo`) for persistence.
-- **Dev convenience:** With `ALLOW_DEV_TOKEN=1`, retrieve a JWT without signing: `curl "http://localhost:5000/auth/dev_token?address=0xYourWallet"`.
-
-### 3. Run the Frontend
-
-```bash
-cd blockvault-frontend
 npm install
-npm start
+npm run dev:web
 ```
 
-The SPA expects `REACT_APP_API_BASE` (optional). By default it assumes the API is reachable via the same origin proxy.
-
----
-
-## API Overview
-
-| Endpoint | Method | Role | Description |
-| --- | --- | --- | --- |
-| `/auth/get_nonce` | POST | public | Issue login nonce for wallet signature |
-| `/auth/login` | POST | public | Verify signature → JWT |
-| `/auth/me` | GET | any | Returns stored address / identity info |
-| `/files` | POST | owner | Upload encrypted file (AES-256-GCM CLI helper) |
-| `/files` | GET | owner | List your files (supports `limit`/`after`) |
-| `/files/<id>` | GET | owner/viewer | Download (requires passphrase) |
-| `/files/<id>` | DELETE | owner | Remove file + shares |
-| `/files/<id>/verify` | GET | owner | Confirms encrypted blob exists |
-| `/files/<id>/share` | POST | owner | Encrypt passphrase to recipient RSA key |
-| `/files/shared` | GET | viewer | Shares sent to you (with encrypted key) |
-| `/files/shares/outgoing` | GET | owner | Shares you granted |
-| `/files/shares/<id>` | DELETE | owner/admin | Revoke share |
-| `/users/profile` | GET | viewer | Role info + sharing key status (add `?with_key=1` for PEM) |
-| `/users/public_key` | POST/DELETE | viewer | Register/remove RSA public key |
-| `/health` | GET | public | Liveness probe |
-
-All authenticated routes require `Authorization: Bearer <jwt>`.
-
----
-
-## Sharing Workflow
-
-1. **Recipient registers RSA key**
-   - Generate keypair (`openssl genrsa -out key.pem 4096`, then export public key: `openssl rsa -in key.pem -pubout -out pub.pem`).
-   - Paste the PEM into the Sharing Center UI or call `POST /users/public_key`.
-2. **Owner uploads & shares**
-   - Upload a file with a strong passphrase (stored client-side only).
-   - Click **Share** on the file, supply recipient address, optional note, optional expiration (`datetime-local`), and the passphrase.
-   - The backend encrypts the passphrase with the recipient’s RSA key.
-3. **Recipient consumes share**
-   - Open Sharing Center → **Shares received** → copy the `encrypted_key`.
-   - Decrypt using their RSA private key (`openssl rsautl -decrypt ...`).
-   - Use decrypted passphrase to download via the UI (or `GET /files/<id>`).
-4. **Revocation**
-   - Owners can revoke any outgoing share; admins can revoke on behalf of others via `/files/shares/<id>`.
-
----
-
-## Optional On‑Chain Anchoring Layer
-
-You may deploy a minimal `FileRegistry` contract that exposes:
-
-```
-function anchorFile(bytes32 fileHash, uint256 size, string cid) external
-```
-
-When `ETH_RPC_URL`, `ETH_PRIVATE_KEY`, and `FILE_REGISTRY_ADDRESS` are supplied, uploads will attempt to send a transaction calling `anchorFile` with:
-
-* `fileHash`: sha256 (32 bytes) of the original plaintext
-* `size`: original size in bytes
-* `cid`: IPFS CID if available (empty string otherwise)
-
-Response objects then include `anchor_tx` (transaction hash or a simulated tag when anchoring disabled). Listing endpoints also surface `anchor_tx`.
-
-Anchoring failures are non-fatal and logged; upload still succeeds locally/IPFS.
-
-Security note: Only include the sha256 if you are comfortable revealing file integrity fingerprints publicly (could aid confirmation of possession for known documents). For stronger privacy keep anchoring disabled or salt/transform future variants.
-
-All Solidity contracts, manifests, and role enforcement layers were removed. If you want to restore them later:
-1. Recreate a `contracts/` folder and add Solidity sources.
-2. Reintroduce Hardhat (or Foundry) tooling.
-3. Expose the deployed addresses through environment variables.
-4. Rebuild frontend wallet + network UI.
-
-Until then, access control is purely off‑chain: possession of a file ID + decrypted passphrase = access.
-
----
-
-## Frontend Highlights
-
-- **Network activity bar:** Tracks concurrent API calls via `useNetworkStore` (purely HTTP now).
-- **Upload card:** Drag & drop, passphrase + optional AAD fields, in-app toast notifications, and custom event to refresh listings.
-- **Files card:** Inline actions (download, share, verify, delete), copy CID/SHA, download modal requiring passphrase entry.
-- **Sharing Center:**
-  - Key management with PEM textarea + quick status badge.
-  - Incoming shares list with metadata, note, encrypted key copy helper.
-  - Outgoing shares grid with revoke action.
-
----
-
-## Testing & Validation
-
-### Automated
+### API
 
 ```bash
-# backend tests (if/when added)
-pytest -q
+python -m pip install -e apps/api[dev]
+npm run dev:api
 ```
 
-### Manual Smoke (recommended after each deployment)
+### Worker
 
-1. **Auth (Optional)** – Use dev token flow or simplified address login.
-2. **Upload & Verify** – Upload file; verify integrity endpoint.
-3. **Share Cycle** – Share passphrase → recipient decrypts → downloads file.
-4. **Revocation** – Revoke share and confirm it's removed from recipient list.
-5. **CORS** – Confirm API accessible from deployed origin.
+```bash
+python -m pip install -e apps/worker
+npm run dev:worker
+```
 
----
+### Local infrastructure
 
-## Deployment Notes
+```bash
+docker compose -f infra/docker-compose.local.yml up -d
+```
 
-- **Backend (Flask):** Suitable for Render, Railway, Fly.io, or Heroku. Run via `gunicorn blockvault.app:create_app()` and configure environment variables in the hosting dashboard. Mount persistent storage or connect to Atlas for MongoDB.
-- **Frontend (React):** Deploy to Netlify, Vercel, or static S3 hosting. Configure `REACT_APP_API_BASE` to the backend URL and ensure the backend’s `CORS_ALLOWED_ORIGINS` includes the deployed origin.
-- **Secrets Management:** Never commit `.env`. For production, rotate JWT and Flask secrets and supply a production-grade MongoDB connection string.
-- **Monitoring:** Tail `backend.log` (or platform logs) for RBAC cache warnings and IPFS failures. Consider wrapping endpoints with structured logging before launch.
+or:
 
-### Chain / Manifest Features
+```bash
+npm run stack:up
+```
 
-Removed. `/settings/import-manifest` now returns a placeholder response if invoked.
+That compose stack now includes:
 
----
+- MongoDB
+- Redis
+- MinIO
+- FastAPI behind Gunicorn on `http://127.0.0.1:8000`
+- Celery worker
+- production-built web UI on `http://127.0.0.1:4173`
 
-## Troubleshooting
+To use the local MinIO service instead of the fallback filesystem store:
 
-| Symptom | Likely Cause | Fix |
-| --- | --- | --- |
-| `nonce expired` | Slow login flow | Request new nonce (`/auth/get_nonce`) |
-| `missing bearer token` | Frontend lost JWT | Re-login; ensure toast host shows success |
-| `recipient has not registered a sharing public key` | Recipient skipped key upload | Have them POST `/users/public_key` |
-| Shares disappear after restart | Using memory DB | Switch to MongoDB instance |
-| `RBAC contract not configured` warning | Legacy log line (if any remains) | Safe to ignore (feature removed) |
+```bash
+$env:BLOCKVAULT_STORAGE_BACKEND="s3"
+$env:BLOCKVAULT_STORAGE_S3_ENDPOINT_URL="http://127.0.0.1:9000"
+$env:BLOCKVAULT_STORAGE_S3_BUCKET="blockvault-local"
+$env:BLOCKVAULT_STORAGE_S3_ACCESS_KEY_ID="blockvault"
+$env:BLOCKVAULT_STORAGE_S3_SECRET_ACCESS_KEY="blockvault123"
+```
 
----
+In `BLOCKVAULT_APP_ENV=production`, the API now refuses to boot unless the object-store backend is `s3` and the configured bucket is reachable.
 
-Happy hacking! This simplified edition focuses on core encrypted storage and sharing—add blockchain layers only if they add real value.
+For a production-like local run, prefer the compose stack over `uvicorn --reload` and `vite dev`.
+
+Useful stack commands:
+
+```bash
+npm run stack:ps
+npm run stack:down
+```
+
+## Hosted deployment
+
+The hosted split deployment uses:
+
+- Vercel for the frontend SPA
+- Render for the API and worker
+- MongoDB Atlas for metadata
+- AWS S3 for encrypted objects and ZKPT runtime artifacts
+
+The repo now includes:
+
+- [vercel.json](./vercel.json)
+- [render.yaml](./render.yaml)
+- [docs/deploy-vercel-render.md](./docs/deploy-vercel-render.md)
+
+One important constraint: the large ZKPT `.zkey` files are not meant to be pushed to GitHub. Upload them to S3 from your local machine before booting the hosted backend:
+
+```bash
+npm run zkpt:artifacts:upload -- --bucket <artifact-bucket-name>
+```
+
+### Local browser workflow check
+
+The fresh rebuild includes a repeatable local browser runner for the core `Vault -> Cases -> Documents -> Evidence` flow.
+
+Start the web and API locally with test auth enabled:
+
+```bash
+$env:BLOCKVAULT_ENABLE_TEST_AUTH="true"
+npm run dev:web
+python -m uvicorn blockvault_api.main:app --app-dir apps/api/src --host 127.0.0.1 --port 8000
+```
+
+Then run:
+
+```bash
+npm run e2e:local
+```
+
+Artifacts and screenshots are written to `output/playwright/`.
+### Authoritative ZKPT runtime
+
+The repo now carries three authoritative PLONK profiles:
+
+- `v4_sparse`: the default sparse-update production profile
+- `v3a`: the preserved fast full-window baseline
+- `v2`: the heavier baseline profile retained for reproducibility and comparison
+
+The fresh rebuild uses a split PLONK path, `snarkjs wtns calculate` plus `snarkjs plonk prove`, instead of `snarkjs fullprove`.
+
+Current measured results on this machine:
+
+- `v2`: about `282-296s` total prove time with a `1.985 GiB` zkey
+- `v3a`: about `77-89s` total prove time for single-shard full-window proofs
+- `v4_sparse`: about `80-91s` total prove time for single-proof sparse-update flows, while keeping larger documents on a single proof when only a few canonical segments change
+
+`v4_sparse` is now the default selected profile because it keeps the same `canonical_segment_mask_v1` proof boundary while making proof count scale with modified segments instead of total document windows.
+
+The default proof budget remains `360` seconds so larger multi-shard documents still have room to complete, but the default profile is no longer the heavy baseline.
+
+You can select an artifact profile independently from the artifact root:
+
+```bash
+$env:BLOCKVAULT_ZKPT_PROFILE="v4_sparse"
+```
+
+By default that resolves to `circuits/zkpt/<profile>`. If you keep the default artifact directory, switching `BLOCKVAULT_ZKPT_PROFILE` is enough to move between the sparse default profile, the preserved full-window baseline, and the heavier reproducibility baseline.
+
+You can override the proof budget explicitly when needed:
+
+```bash
+$env:BLOCKVAULT_ZKPT_PROOF_TIMEOUT_SECONDS="360"
+```
+
+`/health` and `/status` surface the selected profile, discovered profiles, active prover backend, helper/runtime readiness, and warnings when the current artifact profile is likely to outrun the configured budget.
+
+The runtime now also exposes:
+
+- `zkpt_runtime.recentSingleProofBenchmark`
+- `zkpt_runtime.preflightThresholds`
+- `zkpt_runtime.onchain`
+
+Redaction jobs classify themselves before proving:
+
+- `single_proof_ready`
+- `verified_bundle_only`
+- `unsupported_until_v4`
+
+The classification is returned on the redaction job, the persisted ZKPT bundle, and the document result payload. Single-proof bundles that stay inside the direct verifier budget are marked `onchain_eligible=true`; multi-shard bundles remain exportable and verified off-chain but are not treated as first-release on-chain candidates.
+
+The API also enforces artifact compatibility before any bundle can be marked verified:
+
+The runtime now also distinguishes proof models explicitly:
+
+- `full_segment_windows`: preserved authoritative profiles (`v2`, `v3a`, `v3b`, `v3c`)
+- `sparse_update`: active `v4_sparse` profile for modified-segment proving
+
+
+- the selected profile must declare `profile_class: "authoritative"`
+- the selected profile must declare `proof_boundary: "canonical_segment_mask_v1"`
+
+If either check fails, redaction proving stays fail-closed and no verified bundle is emitted.
+
+In `BLOCKVAULT_APP_ENV=production`, startup is stricter:
+
+- `BLOCKVAULT_DEBUG` must be `false`
+- `BLOCKVAULT_ENABLE_TEST_AUTH` must be `false`
+- `BLOCKVAULT_SECRET_KEY` must not be left at the default value
+- configured frontend origins must not point at `localhost` or `127.0.0.1`
+- `BLOCKVAULT_SIWE_DOMAIN` and `BLOCKVAULT_SIWE_URI` must not use localhost values
+- the ZKPT runtime must be authoritative-ready
+- the redaction runtime must be ready
+
+If either condition fails, the API refuses to boot instead of serving degraded production semantics.
+
+### Request rate limits
+
+The fresh API now applies a basic in-memory rate limit to the highest-risk write surfaces:
+
+- `POST /api/auth/siwe/nonce`
+- `POST /api/auth/siwe/verify`
+- `POST /api/auth/test-login`
+- `POST /api/v1/files/init-upload`
+- `POST /api/v1/redactions/jobs`
+
+Config knobs:
+
+```bash
+BLOCKVAULT_RATE_LIMIT_AUTH_REQUESTS=20
+BLOCKVAULT_RATE_LIMIT_AUTH_WINDOW_SECONDS=60
+BLOCKVAULT_RATE_LIMIT_WRITE_REQUESTS=10
+BLOCKVAULT_RATE_LIMIT_WRITE_WINDOW_SECONDS=60
+```
+
+This limiter is intentionally small and process-local. It is suitable for local use and single-instance staging, but production deployment should replace it with a distributed limit at the edge or API gateway.
+
+### Upload size limits
+
+The API now enforces a hard payload ceiling on encrypted vault and legal document uploads at both the declared init step and the actual multipart upload step.
+
+Config knob:
+
+```bash
+BLOCKVAULT_MAX_UPLOAD_BYTES=26214400
+```
+
+The default is `25 MiB`. Requests over the limit return `413`.
+
+### ZKPT runtime probe
+
+The rebuild now includes a live runtime probe for the authoritative witness and prover path. It uses the same projection, witness generation, and prove/verify code as the redaction workflow, but against a deterministic built-in text fixture unless you override it.
+
+Run it with:
+
+```bash
+npm run zkpt:probe
+```
+
+Useful variants:
+
+```bash
+python scripts/zkpt/runtime_probe.py --stdout-only
+python scripts/zkpt/runtime_probe.py --term privileged --term confidential
+python scripts/zkpt/runtime_probe.py --text "Confidential memo for BlockVault." --output output/zkpt/manual-probe.json
+```
+
+Each run writes a JSON report under `output/zkpt/` by default with:
+
+- selected artifact profile and proof boundary
+- runtime readiness and prover backend
+- matched canonical segments
+- witness/prove/verify timings
+- multi-shard execution metadata for long inputs, including `verifiedShards`, `totalShards`, and `maxParallelShards`
+- terminal status: `verified`, `failed`, or `unsupported`
+- concrete recommendations when the runtime cannot complete authoritative proofs within budget
+
+### ZKPT latency benchmark
+
+The repo now also includes a latency-analysis command that wraps the live probe and tells you whether the current profile is over the product target budget, what the bottleneck is, and whether source recovery is blocking the next optimization step.
+
+Run it with:
+
+```bash
+npm run zkpt:benchmark
+```
+
+Useful variant:
+
+```bash
+python scripts/zkpt/profile_benchmark.py --stdout-only
+```
+
+The benchmark report adds:
+
+- target proof budget
+- bottleneck classification (`projection`, `witness`, `prove`, or `verify`)
+- over-target signal
+- `nextStep`, including the source-recovery gate when the selected profile has no `.circom` source in the workspace
+
+Each verified live workflow now also records a benchmark row in Mongo, and `/status` surfaces the rolling single-proof median as `zkpt_runtime.recentSingleProofBenchmark`.
+
+The current repo truth is now:
+
+- `v4_sparse` is the default authoritative profile
+- `v3a` remains the preserved fast full-window baseline
+- `v2` remains the preserved heavy authoritative baseline
+- the proving step, not witness generation, still dominates latency
+- the runtime now supports bounded parallel shard proving for larger multi-shard documents
+
+You can cap shard-level concurrency explicitly:
+
+```bash
+$env:BLOCKVAULT_ZKPT_MAX_PARALLEL_SHARDS="2"
+```
+
+`/health` and `/status` surface this as `zkpt_runtime.limits.maxParallelShards`.
+
+### Live workflow validation
+
+The repo also includes a packaged-stack workflow runner that exercises the public API end to end:
+
+```bash
+npm run zkpt:workflow
+```
+
+It performs:
+
+- test login
+- case creation
+- encrypted document upload
+- notarization
+- evidence export
+- redaction submission
+- polling to a terminal verified result
+- authoritative ZKPT bundle export
+
+The output JSON is written under `output/zkpt/` and records the end-to-end timings for the currently selected profile.
+
+For scanned/image-only documents, there is also a live OCR workflow runner:
+For scanned/image-only documents, the redaction job now performs OCR internally when needed. There is also a live workflow runner for that path:
+
+```bash
+npm run zkpt:ocr-workflow
+```
+
+It performs:
+
+- test login
+- upload of an image-only scanned PDF fixture
+- notarization of the original scanned document
+- evidence export
+- redaction submission and polling through the inline OCR-assisted path
+- authoritative ZKPT bundle export
+
+### On-chain verifier configuration
+
+The first on-chain path is single-proof only and uses the generated PLONK verifier plus the receipt registry scaffold in `contracts/zkpt/ZKPTReceiptRegistry.sol`.
+
+Generate the Solidity verifier for the active profile:
+
+```bash
+npm run zkpt:export-verifier
+```
+
+That writes:
+
+- `contracts/zkpt/generated/<profile>/PlonkVerifier.sol`
+- `contracts/zkpt/generated/<profile>/verifier-export.json`
+
+Compile the verifier and registry contracts:
+
+```bash
+npm run zkpt:contracts:build
+```
+
+Deploy the verifier plus receipt registry on the configured EVM testnet:
+
+```bash
+npm run zkpt:contracts:deploy:testnet
+```
+
+The deployment helper writes a manifest under:
+
+- `contracts/zkpt/deployments/blockvaultTestnet-<profile>.json`
+
+Configure it with:
+
+```powershell
+$env:BLOCKVAULT_ZKPT_ONCHAIN_ENABLED="true"
+$env:BLOCKVAULT_ZKPT_ONCHAIN_CHAIN_ID="11155111"
+$env:BLOCKVAULT_ZKPT_ONCHAIN_RPC_URL="https://your-sepolia-rpc"
+$env:BLOCKVAULT_ZKPT_ONCHAIN_RECEIPT_REGISTRY_ADDRESS="0x..."
+$env:BLOCKVAULT_ZKPT_ONCHAIN_RELAYER_PRIVATE_KEY="0x..."
+```
+
+When configured, verified single-proof bundles can be submitted through:
+
+- `POST /api/v1/zkpt/bundles/{bundle_id}/submit-onchain`
+- `GET /api/v1/zkpt/bundles/{bundle_id}/onchain-status`
+
+`onchainStatus=verified` is intentionally not used. The app only reports `confirmed` after the verifier/registry transaction is actually mined and accepted on-chain.
+
+`/status` also surfaces the on-chain scaffold state as:
+
+- `zkpt_runtime.onchain.verifierSourcePath`
+- `zkpt_runtime.onchain.verifierMetadataPath`
+- `zkpt_runtime.onchain.verifierContractName`
+- `zkpt_runtime.onchain.deploymentManifestPath`
+- `zkpt_runtime.onchain.deployedVerifierAddress`
+- `zkpt_runtime.onchain.deployedRegistryAddress`
+
+### Restored Circom source
+
+The legacy Circom source for the preserved `v2` profile has now been restored under:
+
+- `circuits/zkpt/v2/src/zkpt_redaction_v2.circom`
+
+There is also a rebuild helper:
+
+```bash
+python scripts/zkpt/build_profile.py --help
+```
+
+That script is intended to regenerate the baseline profile and produce smaller candidate profiles for benchmarking once `circom`, `snarkjs`, `circomlib`, and a PTAU file are available locally.
+
+The helper now rewrites the top-level `component main = ZKPTRedaction(...)` instantiation for each target profile, so smaller candidate profiles can be generated from the restored `v2` source without manually editing the checked-in baseline source file.
+
+

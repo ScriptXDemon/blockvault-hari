@@ -1,0 +1,38 @@
+{
+  "profile_id": "v2",
+  "profile_class": "authoritative",
+  "proof_boundary": "canonical_segment_mask_v1",
+  "artifact_version_id": "v2",
+  "build_timestamp": "2026-03-06T19:27:27.177279+00:00",
+  "circuit": {
+    "id": "zkpt_redaction_v2",
+    "num_policy_rules": 8,
+    "num_segments": 16,
+    "segment_size": 1024,
+    "tree_depth": 8
+  },
+  "circuit_id": "zkpt_redaction_v2",
+  "files": {
+    "r1cs": "zkpt_redaction_v2.r1cs",
+    "solidity_verifier": "solidity_verifier.sol",
+    "verification_key": "verification_key.json",
+    "wasm": "zkpt_redaction_v2_js/zkpt_redaction_v2.wasm",
+    "zkey": "circuit.zkey"
+  },
+  "hashes": {
+    "r1cs": "bc066a1e75045b3d55e047a11af5788e89d0bbc5dad53631519531037581f964",
+    "solidity_verifier": "44d4b721e94f8d9b563e82e39bfa51bb9c927ad399f2225b167eada29e0ae450",
+    "verification_key": "61d82448d6e66d171c8fa3f60a229e38194e6da04b42c0d60df9e92fafcf1dfa",
+    "wasm": "a89bd1c55313da38896fa8fb39fcafd7947eefaeaba83603c55b2d3f6a74e8d1",
+    "zkey": "7827ea3d7de1405360815fd1e2a968295e434b0842a39ead7abba579163dfe34"
+  },
+  "protocol": "plonk",
+  "toolchain": {
+    "circom": "circom compiler 2.2.3",
+    "circomlib": "2.0.5",
+    "node": "v20.20.1",
+    "snarkjs": "0.7.6"
+  },
+  "proof_model": "full_segment_windows",
+  "binding_input_name": "transformationId"
+}

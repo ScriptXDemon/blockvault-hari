@@ -1,0 +1,9 @@
+.wrapper { position: relative; display: inline-block; }
+.menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 200; background: var(--bv-surface); border: 1px solid var(--bv-border); border-radius: var(--bv-radius-lg); box-shadow: var(--bv-shadow-md); min-width: 160px; padding: var(--bv-space-1) 0; animation: menuIn 0.12s ease; }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.item { display: flex; align-items: center; gap: var(--bv-space-2); width: 100%; padding: 8px 14px; background: none; border: none; cursor: pointer; font-size: var(--bv-text-sm); color: var(--bv-ink); text-align: left; transition: background var(--bv-transition-fast); white-space: nowrap; }
+.item:hover:not(:disabled) { background: var(--bv-surface-strong); }
+.item:disabled { opacity: 0.45; cursor: not-allowed; }
+.item--danger { color: var(--bv-danger); }
+.item--danger:hover:not(:disabled) { background: color-mix(in srgb, var(--bv-danger) 8%, transparent); }
+.divider { height: 1px; background: var(--bv-border); margin: var(--bv-space-1) 0; }

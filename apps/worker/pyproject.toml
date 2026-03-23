@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blockvault-worker"
+version = "0.1.0"
+description = "Celery worker entrypoint for BlockVault background jobs"
+requires-python = ">=3.11"
+dependencies = [
+  "celery>=5.4,<6",
+  "redis>=5.0,<6"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

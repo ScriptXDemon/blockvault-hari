@@ -1,0 +1,4 @@
+.root { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--bv-space-3); padding: 48px var(--bv-space-6); text-align: center; }
+.icon { color: var(--bv-ink-faint); }
+.title { font-family: var(--bv-font-serif); font-size: var(--bv-text-base); font-weight: 600; color: var(--bv-ink); margin: 0; }
+.description { font-size: var(--bv-text-sm); color: var(--bv-ink-muted); margin: 0; max-width: 360px; line-height: 1.6; }

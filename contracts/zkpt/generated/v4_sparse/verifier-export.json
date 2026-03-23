@@ -1,0 +1,9 @@
+{
+  "profileId": "v4_sparse",
+  "artifactVersion": "v4_sparse",
+  "proofBoundary": "canonical_segment_mask_v1",
+  "zkeyPath": "D:\\BlockVault-Decentralized-File-Storage\\circuits\\zkpt\\v4_sparse\\circuit.zkey",
+  "verificationKeyPath": "D:\\BlockVault-Decentralized-File-Storage\\circuits\\zkpt\\v4_sparse\\verification_key.json",
+  "verifierSourcePath": "D:\\BlockVault-Decentralized-File-Storage\\contracts\\zkpt\\generated\\v4_sparse\\PlonkVerifier.sol",
+  "contractName": "PlonkVerifier"
+}

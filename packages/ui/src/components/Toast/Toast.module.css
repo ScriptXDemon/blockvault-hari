@@ -1,0 +1,19 @@
+.container { position: fixed; bottom: 24px; right: 24px; z-index: 500; display: flex; flex-direction: column; gap: var(--bv-space-2); max-width: 400px; width: calc(100vw - 48px); }
+.toast { display: flex; align-items: flex-start; gap: var(--bv-space-3); padding: 14px var(--bv-space-4); background: var(--bv-surface); border: 1px solid var(--bv-border); border-radius: var(--bv-radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.12); animation: slideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes slideIn { from { opacity: 0; transform: translateX(24px) scale(0.96); } to { opacity: 1; transform: translateX(0) scale(1); } }
+.toast--success { border-left: 3px solid var(--bv-accent); }
+.toast--error { border-left: 3px solid var(--bv-danger); }
+.toast--warning { border-left: 3px solid var(--bv-highlight); }
+.toast--info { border-left: 3px solid #3b82f6; }
+.icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.icon--success { background: color-mix(in srgb, var(--bv-accent) 15%, transparent); color: var(--bv-accent); }
+.icon--error { background: color-mix(in srgb, var(--bv-danger) 12%, transparent); color: var(--bv-danger); }
+.icon--warning { background: color-mix(in srgb, var(--bv-highlight) 15%, transparent); color: color-mix(in srgb, var(--bv-highlight) 70%, #000); }
+.icon--info { background: color-mix(in srgb, #3b82f6 12%, transparent); color: #1d4ed8; }
+.content { flex: 1; min-width: 0; }
+.message { margin: 0; font-size: var(--bv-text-sm); color: var(--bv-ink); line-height: 1.5; }
+.progress { height: 2px; background: var(--bv-border); border-radius: 9999px; margin-top: 8px; overflow: hidden; }
+.progressBar { height: 100%; background: var(--bv-accent); border-radius: 9999px; animation: shrink 5.2s linear forwards; }
+@keyframes shrink { from { width: 100%; } to { width: 0%; } }
+.closeBtn { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; background: none; cursor: pointer; color: var(--bv-ink-faint); border-radius: var(--bv-radius-sm); flex-shrink: 0; transition: color var(--bv-transition-fast), background var(--bv-transition-fast); }
+.closeBtn:hover { color: var(--bv-ink); background: var(--bv-surface-strong); }

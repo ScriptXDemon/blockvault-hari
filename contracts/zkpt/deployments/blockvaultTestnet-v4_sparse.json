@@ -1,0 +1,12 @@
+{
+  "profileId": "v4_sparse",
+  "artifactVersion": "v4_sparse",
+  "proofBoundary": "canonical_segment_mask_v1",
+  "verifierSourcePath": "zkpt/generated/v4_sparse/PlonkVerifier.sol",
+  "chainId": 31337,
+  "verifierContractName": "PlonkVerifier",
+  "verifierAddress": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+  "registryAddress": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "deployedAt": "2026-03-16T15:22:32.981Z"
+}

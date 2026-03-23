@@ -1,0 +1,44 @@
+{
+  "name": "blockvault-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "packages/ui",
+    "packages/contracts"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace @blockvault/web run dev",
+    "build:web": "npm --workspace @blockvault/web run build",
+    "typecheck:web": "npm --workspace @blockvault/web run typecheck",
+    "test:web": "npm --workspace @blockvault/web run test",
+    "e2e:local": "node scripts/e2e/local-workflows.mjs",
+    "stack:verify:web": "node scripts/e2e/verify-web-build.mjs",
+    "zkpt:probe": "python scripts/zkpt/runtime_probe.py",
+    "zkpt:benchmark": "python scripts/zkpt/profile_benchmark.py",
+    "zkpt:workflow": "python scripts/zkpt/live_workflow.py",
+    "zkpt:ocr-workflow": "python scripts/zkpt/ocr_workflow.py",
+    "zkpt:artifacts:upload": "python scripts/zkpt/upload_artifacts.py",
+    "zkpt:onchain:local": "python scripts/zkpt/local_onchain_roundtrip.py",
+    "zkpt:export-verifier": "python scripts/zkpt/export_verifier.py",
+    "zkpt:contracts:build": "npm --prefix contracts run build",
+    "zkpt:contracts:deploy:testnet": "npm --prefix contracts run deploy:testnet",
+    "dev:api": "python -m uvicorn blockvault_api.main:app --app-dir apps/api/src --reload --host 127.0.0.1 --port 8000",
+    "test:api": "python -m pytest apps/api/tests",
+    "dev:worker": "python -m blockvault_worker.main",
+    "stack:up": "docker compose -f infra/docker-compose.local.yml up -d",
+    "stack:down": "docker compose -f infra/docker-compose.local.yml down",
+    "stack:ps": "docker compose -f infra/docker-compose.local.yml ps",
+    "test": "npm run test:web && npm run test:api"
+  },
+  "dependencies": {
+    "circomlibjs": "^0.1.7",
+    "snarkjs": "0.7.6"
+  },
+  "devDependencies": {
+    "playwright": "^1.53.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

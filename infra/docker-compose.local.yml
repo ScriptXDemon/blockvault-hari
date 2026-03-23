@@ -1,0 +1,120 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: blockvault-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: blockvault-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-03T21-03-04Z
+    container_name: blockvault-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: blockvault
+      MINIO_ROOT_PASSWORD: blockvault123
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/api.Dockerfile
+    container_name: blockvault-api
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - redis
+      - minio
+    environment:
+      BLOCKVAULT_APP_ENV: staging
+      BLOCKVAULT_DEBUG: "false"
+      BLOCKVAULT_FRONTEND_ORIGIN: http://localhost:4173
+      BLOCKVAULT_FRONTEND_ORIGIN_ALT: http://127.0.0.1:4173
+      BLOCKVAULT_MONGO_URI: mongodb://mongo:27017
+      BLOCKVAULT_MONGO_DATABASE: blockvault_fresh
+      BLOCKVAULT_SECRET_KEY: blockvault-local-secret-123456
+      BLOCKVAULT_ENABLE_TEST_AUTH: "true"
+      BLOCKVAULT_STORAGE_BACKEND: s3
+      BLOCKVAULT_STORAGE_S3_ENDPOINT_URL: http://minio:9000
+      BLOCKVAULT_STORAGE_S3_BUCKET: blockvault-local
+      BLOCKVAULT_STORAGE_S3_ACCESS_KEY_ID: blockvault
+      BLOCKVAULT_STORAGE_S3_SECRET_ACCESS_KEY: blockvault123
+      BLOCKVAULT_CELERY_BROKER_URL: redis://redis:6379/0
+      BLOCKVAULT_CELERY_RESULT_BACKEND: redis://redis:6379/0
+      BLOCKVAULT_ALLOW_INLINE_REDACTION_FALLBACK: "${BLOCKVAULT_ALLOW_INLINE_REDACTION_FALLBACK:-false}"
+      BLOCKVAULT_ZKPT_PROFILE: "${BLOCKVAULT_ZKPT_PROFILE:-v4_sparse}"
+      BLOCKVAULT_ZKPT_PROOF_TIMEOUT_SECONDS: "${BLOCKVAULT_ZKPT_PROOF_TIMEOUT_SECONDS:-360}"
+      BLOCKVAULT_ZKPT_ONCHAIN_ENABLED: "${BLOCKVAULT_ZKPT_ONCHAIN_ENABLED:-false}"
+      BLOCKVAULT_ZKPT_ONCHAIN_CHAIN_ID: "${BLOCKVAULT_ZKPT_ONCHAIN_CHAIN_ID:-11155111}"
+      BLOCKVAULT_ZKPT_ONCHAIN_RPC_URL: "${BLOCKVAULT_ZKPT_ONCHAIN_RPC_URL:-}"
+      BLOCKVAULT_ZKPT_ONCHAIN_RECEIPT_REGISTRY_ADDRESS: "${BLOCKVAULT_ZKPT_ONCHAIN_RECEIPT_REGISTRY_ADDRESS:-}"
+      BLOCKVAULT_ZKPT_ONCHAIN_RELAYER_PRIVATE_KEY: "${BLOCKVAULT_ZKPT_ONCHAIN_RELAYER_PRIVATE_KEY:-}"
+      BLOCKVAULT_ZKPT_ONCHAIN_CONFIRMATIONS: "${BLOCKVAULT_ZKPT_ONCHAIN_CONFIRMATIONS:-1}"
+    volumes:
+      - ../circuits:/app/circuits:ro
+      - ../output:/app/output
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/api.Dockerfile
+    container_name: blockvault-worker
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      BLOCKVAULT_APP_ENV: staging
+      BLOCKVAULT_DEBUG: "false"
+      BLOCKVAULT_FRONTEND_ORIGIN: http://localhost:4173
+      BLOCKVAULT_FRONTEND_ORIGIN_ALT: http://127.0.0.1:4173
+      BLOCKVAULT_MONGO_URI: mongodb://mongo:27017
+      BLOCKVAULT_MONGO_DATABASE: blockvault_fresh
+      BLOCKVAULT_SECRET_KEY: blockvault-local-secret-123456
+      BLOCKVAULT_ENABLE_TEST_AUTH: "true"
+      BLOCKVAULT_STORAGE_BACKEND: s3
+      BLOCKVAULT_STORAGE_S3_ENDPOINT_URL: http://minio:9000
+      BLOCKVAULT_STORAGE_S3_BUCKET: blockvault-local
+      BLOCKVAULT_STORAGE_S3_ACCESS_KEY_ID: blockvault
+      BLOCKVAULT_STORAGE_S3_SECRET_ACCESS_KEY: blockvault123
+      BLOCKVAULT_CELERY_BROKER_URL: redis://redis:6379/0
+      BLOCKVAULT_CELERY_RESULT_BACKEND: redis://redis:6379/0
+      BLOCKVAULT_ALLOW_INLINE_REDACTION_FALLBACK: "${BLOCKVAULT_ALLOW_INLINE_REDACTION_FALLBACK:-false}"
+      BLOCKVAULT_ZKPT_PROFILE: "${BLOCKVAULT_ZKPT_PROFILE:-v4_sparse}"
+      BLOCKVAULT_ZKPT_PROOF_TIMEOUT_SECONDS: "${BLOCKVAULT_ZKPT_PROOF_TIMEOUT_SECONDS:-360}"
+    volumes:
+      - ../circuits:/app/circuits:ro
+      - ../output:/app/output
+    command: ["python", "-m", "blockvault_worker.main"]
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/web.Dockerfile
+      args:
+        VITE_API_BASE_URL: http://127.0.0.1:8000
+    container_name: blockvault-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "4173:80"
+
+volumes:
+  mongo_data:
+  minio_data:

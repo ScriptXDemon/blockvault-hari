@@ -1,0 +1,10 @@
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 9999px; font-size: var(--bv-text-xs); font-weight: 600; letter-spacing: 0.02em; line-height: 1.6; }
+.badge--sm { font-size: 11px; padding: 1px 6px; }
+.badge--default { background: color-mix(in srgb, var(--bv-ink-muted) 12%, transparent); color: var(--bv-ink-muted); }
+.badge--success { background: color-mix(in srgb, var(--bv-accent) 12%, transparent); color: var(--bv-accent-strong); }
+.badge--warning { background: color-mix(in srgb, var(--bv-highlight) 15%, transparent); color: color-mix(in srgb, var(--bv-highlight) 80%, #000); }
+.badge--danger { background: color-mix(in srgb, var(--bv-danger) 10%, transparent); color: var(--bv-danger); }
+.badge--info { background: color-mix(in srgb, #3b82f6 10%, transparent); color: #1d4ed8; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.dot--pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
