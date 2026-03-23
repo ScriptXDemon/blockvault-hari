@@ -38,3 +38,5 @@ contracts/artifacts/
 target/
 apps/redactor-rs/target/
 circuits/zkpt/*/circuit.zkey
+
+.vercel
